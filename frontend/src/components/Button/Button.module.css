@@ -1,0 +1,38 @@
+.primary_btn {
+    padding: 18px 10px;
+    height: 10px;
+
+    width: 180px;
+    background-color: #7d0101;
+
+    width: 170px;
+    background-color: #572802;
+
+    color: white;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: transparent;
+    justify-content: center;
+
+}.outline_btn {
+    padding: 18px 10px;
+    border: #7d0101 solid ;
+    height: 10px;
+    width: 100%;
+    background-color: transparent;
+    color: #7d0101;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+
+
+}
+
+.msg_icon {
+    margin: 0;
+    padding: 0;
+}

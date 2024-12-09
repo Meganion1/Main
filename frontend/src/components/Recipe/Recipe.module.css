@@ -1,0 +1,130 @@
+.container {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #343a40;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.noRecipes {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #dc3545;
+}
+
+.recipeGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 0 20px;
+}
+
+.recipeCard {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.recipeCard:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.recipeTitle {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #dc3545;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.recipeImage {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.recipeContent {
+    font-size: 1rem;
+    color: #495057;
+}
+
+.ingredientsSection,
+.instructionsSection {
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #343a40;
+    margin-bottom: 10px;
+}
+
+.ingredientsList,
+.instructionsList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ingredientItem,
+.instructionItem {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.ingredientItem::before {
+    content: "✔️";
+    margin-right: 8px;
+    color: green;
+}
+
+.clampedText {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.expandedText {
+    display: block;
+}
+
+.readMoreButton {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 4px;
+}
+
+.readMoreButton:hover {
+    background-color: #c82333;
+}
+
+@media screen and (max-width: 768px) {
+    .recipeGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .recipeCard {
+        max-width: 100%;
+    }
+}

@@ -1,0 +1,91 @@
+/* AuthStyles.css */
+.form_container {
+  display: flex;
+  align-items: center;
+  /* justify-content: center; */
+  gap: 30px;
+  padding: 0;
+  margin: 0;
+  /* width:25%; */
+  height: 100%;
+  background-color: #c5cacf;
+}
+.image{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* margin-top: -60px; */
+}
+.imageC{
+  opacity: 0.7;
+  background-color: #6c6767;
+  width: 100%;
+  display: flex;
+  /* margin-bottom:  ; */
+}
+.form_section {
+  /* max-width: 400px; */
+  width:35%;
+  padding: 20px;
+  margin: 10px;
+  height: 100%;
+  /* background: #fff; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* align-items: center; */
+  border-radius: 0px;
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* gap: 16px; */
+  width: 100%;
+  /* height: 100%; */
+}
+
+form input {
+  margin-bottom: 15px;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+form button {
+  padding: 10px;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #7d0101;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+form button:hover {
+  opacity: 0.7;
+}
+
+form p {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+form p a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+form p a:hover {
+  text-decoration: underline;
+}
