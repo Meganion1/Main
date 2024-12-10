@@ -1,25 +1,32 @@
 import base64
-from io import BytesIO
 import os
+from io import BytesIO
 from PIL import Image
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
 from django.http import JsonResponse
-import logging
 
-# Set up logging
-logger = logging.getLogger(__name__)
-
-# Load dataset and model on startup
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-csv_path = os.path.join(BASE_DIR, 'Dataset.csv')
-images_folder = os.path.join(BASE_DIR, 'images')
-dataset = pd.read_csv(csv_path)
-dataset['Cleaned_Ingredients'] = dataset['Cleaned_Ingredients'].astype(str)
+csv_path = os.path.join(BASE_DIR, 'Dataset.csv')  # Path to your CSV file
+images_folder = os.path.join(BASE_DIR, 'images')  # Path to your images folder
 
-# Initialize the TF-IDF vectorizer
-vectorizer = TfidfVectorizer(tokenizer=lambda x: x.split(', '), preprocessor=lambda x: x.lower())
+dataset = pd.read_csv(csv_path)
+
+dataset['Cleaned_Ingredients'] = dataset['Cleaned_Ingredients'].astype(str)
+dataset['Cleaned_Ingredients'] = dataset['Cleaned_Ingredients'].str.replace('[^a-zA-Z, ]', '', regex=True)  # Remove non-alphabetic characters
+dataset['Cleaned_Ingredients'] = dataset['Cleaned_Ingredients'].str.lower()  # Convert to lowercase
+
+# Initialize the TF-IDF vectorizer with better parameters
+vectorizer = TfidfVectorizer(
+    stop_words='english',  # Remove stop words like 'the', 'a', etc.
+    ngram_range=(1, 2),    # Use unigrams and bigrams to capture more context
+    max_features=1000,     
+)
+
+# Fit the TF-IDF vectorizer
 tfidf_matrix = vectorizer.fit_transform(dataset['Cleaned_Ingredients'])
 
 def get_image_base64(image_path):
@@ -31,68 +38,32 @@ def get_image_base64(image_path):
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return img_str
     except Exception as e:
-        logger.error(f"Error converting image to base64: {e}")
         return None
 
 def recommend_recipes(request):
-    # Get user input from request (POST or GET)
-    user_input = request.GET.get('ingredients', '')  # Expecting comma-separated ingredients in the query string
+    user_input = request.GET.get('ingredients', '')    
     if not user_input:
         return JsonResponse({'error': 'No ingredients provided'}, status=400)
-
-    logger.info(f"User input ingredients: {user_input}")
-
-    # Process input and calculate similarity
-    user_vector = vectorizer.transform([user_input.lower()])
+    user_input_cleaned = user_input.lower().strip()
+    # Transform the user input into a TF-IDF vector
+    user_vector = vectorizer.transform([user_input_cleaned])   
+    # Calculate cosine similarity between user input and the dataset
     cosine_similarities = cosine_similarity(user_vector, tfidf_matrix).flatten()
-    
-    logger.info(f"Cosine similarities: {cosine_similarities}")
-    
-    # Get top 5 similar recipes, handle case where there may be fewer than 5 valid results
-    top_indices = cosine_similarities.argsort()[-5:][::-1]
-    logger.info(f"Top recommended recipe indices: {top_indices}")
-
+    # Get the indices of the top 5 most similar recipes
+    top_indices = cosine_similarities.argsort()[-5:][::-1]  # Get top 5 recommendations
+    # Prepare the recommendations
     recommendations = []
     for idx in top_indices:
         recipe = dataset.iloc[idx]
-        image_path = os.path.join(images_folder, f"{recipe['Image_Name']}.jpg")  # Assuming images are named as 'Image_Name.jpg'
-
-        # Check if image exists and convert to base64 if valid
+        image_path = os.path.join(images_folder, f"{recipe['Image_Name']}.jpg")  # Assuming images are named 'Image_Name.jpg'
+        # Check if image exists and convert to base64 if available
         image_base64 = get_image_base64(image_path)
-
-        # Prepare recipe data
-        recipe_data = {
+        # Prepare the recipe information
+        recommendations.append({
             'title': recipe['Title'],
             'ingredients': recipe['Ingredients'],
             'instructions': recipe['Instructions'],
-            'image_base64': image_base64 or None  # If image is None, include None
-        }
+            'image_base64': image_base64  # Base64-encoded image if available
+        })
 
-        recommendations.append(recipe_data)
-
-    # Ensure at least 5 recommendations are provided
-    if len(recommendations) < 5:
-        logger.info(f"Insufficient recommendations ({len(recommendations)}), padding with similar recipes.")
-        remaining_needed = 5 - len(recommendations)
-        
-        # Add more recipes by fetching the next most similar ones
-        for idx in cosine_similarities.argsort()[-(5+remaining_needed):-5][::-1]:
-            recipe = dataset.iloc[idx]
-            image_path = os.path.join(images_folder, f"{recipe['Image_Name']}.jpg")
-            image_base64 = get_image_base64(image_path)
-
-            recipe_data = {
-                'title': recipe['Title'],
-                'ingredients': recipe['Ingredients'],
-                'instructions': recipe['Instructions'],
-                'image_base64': image_base64 or None
-            }
-            recommendations.append(recipe_data)
-            
-            if len(recommendations) >= 5:
-                break
-
-    if recommendations:
-        return JsonResponse({'recommendations': recommendations})
-    else:
-        return JsonResponse({'error': 'No similar recipes found'}, status=404)
+    return JsonResponse({'recommendations': recommendations})

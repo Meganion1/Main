@@ -1,23 +1,27 @@
 import React, { useState } from "react";
 import styles from "./Ingredients.module.css";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Correct import for React Router v6
+import { useNavigate } from "react-router-dom";
 
 function Ingredients() {
   const ingredients = [
-    { id: 1521, name: "Cheese" },
+    { id: 1521, name: "Lemon" },
     { id: 1522, name: "Chicken" },
     { id: 1523, name: "Eggs" },
     { id: 1527, name: "Milk" },
-    { id: 1528, name: "Onion" },
-    { id: 1530, name: "Tomato" },
+    { id: 1528, name: "Bacon" },
+    { id: 1530, name: "Pork" },
     { id: 1534, name: "Avocado" },
+    { id: 1536, name: "Fish" },
   ];
 
   const [selectedIngredients, setSelectedIngredients] = useState([]);
-  const [loading, setLoading] = useState(false);  // For tracking loading state
-  const [error, setError] = useState(null);     // For error messages
-  const navigate = useNavigate(); // Correct hook for React Router v6
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [image, setImage] = useState(null); // Image state
+  const [isDetecting, setIsDetecting] = useState(false); // Detection state
+  const [detectedRecipe, setDetectedRecipe] = useState(null); // Detected recipe state
+  const navigate = useNavigate();
 
   const handleFindRecipesClick = async () => {
     if (selectedIngredients.length === 0) {
@@ -25,8 +29,8 @@ function Ingredients() {
       return;
     }
 
-    setLoading(true);  // Show loading state
-    setError(null);    // Clear previous errors
+    setLoading(true);
+    setError(null);
 
     try {
       const ingredientNames = selectedIngredients.map((item) => item.name);
@@ -37,8 +41,7 @@ function Ingredients() {
       });
 
       if (response.data && response.data.recommendations.length > 0) {
-        // Ensure we are getting at least 5 recipes, even if some have no image
-        const recommendations = response.data.recommendations.slice(0, 5); // Take first 5 recommendations
+        const recommendations = response.data.recommendations.slice(0, 5);
         navigate("/recipe", { state: { recipes: recommendations, selectedIngredients } });
       } else {
         setError("No recipes found.");
@@ -49,6 +52,29 @@ function Ingredients() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImage(e.target.result); // Set image as a preview
+        detectRecipe(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const detectRecipe = (imageData) => {
+    setIsDetecting(true);
+    setDetectedRecipe(null);
+
+    // Simulating recipe detection (mock)
+    setTimeout(() => {
+      setIsDetecting(false);
+      setDetectedRecipe("Spaghetti Bolognese"); // Mock recipe
+    }, 2000);
   };
 
   const handleIngredientSelect = (ingredient) => {
@@ -125,9 +151,11 @@ function Ingredients() {
                 <>
                   <h4>Selected Ingredient Names:</h4>
                   <div style={{ flexDirection: "column" }}>
-                    {selectedIngredients.map((ingredient) => (
-                      <p key={ingredient.id}>{ingredient.name}</p>
-                    ))}
+                    {selectedIngredients
+                      .map((ingredient) =>
+                        <p>{ingredient.name}</p>
+                      )
+                    }
                   </div>
                 </>
               )}
@@ -148,6 +176,32 @@ function Ingredients() {
         <div className={`col-md-3 ${styles.customColumn} ${styles.third}`}>
           <div className={styles.card}>
             <h1 className={styles.title}>Food Recipe Detection</h1>
+            <div className={styles.uploadArea}>
+              <label htmlFor="upload" className={styles.uploadLabel}>
+                Click here to upload an image of food
+              </label>
+              <input
+                id="upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className={styles.uploadInput}
+              />
+            </div>
+            {image && (
+              <img src={image} alt="Uploaded food" className={styles.previewImage} />
+            )}
+            {isDetecting && (
+              <div className={styles.detectionResult}>
+                <div className={styles.loadingSpinner}></div>
+                <p>Detecting recipe...</p>
+              </div>
+            )}
+            {detectedRecipe && (
+              <div className={styles.detectionResult}>
+                <p>Recipe: {detectedRecipe}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
